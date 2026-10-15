@@ -12,5 +12,20 @@
   <input type="text" id="password" placeholder="Enter a password">
 
   <p id="result">Strength: waiting for input...</p>
+  
+  <script>
+    const passwordInput = document.getElementById("password");
+    const result = document.getElementById("result");
+
+    passwordInput.addEventListener("input", function () {
+      const length = passwordInput.value.length;
+
+      if (length === 0) {
+        result.textContent = "Strength: waiting for input...";
+      } else {
+        result.textContent = "Your password has " + length + " characters.";
+      }
+    });
+  </script>
 </body>
 </html>
