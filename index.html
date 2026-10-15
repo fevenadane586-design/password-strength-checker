@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Password Strength Checker</title>
-    <style>
+  <style>
     body {
       font-family: Arial, sans-serif;
       max-width: 500px;
@@ -16,6 +16,11 @@
       padding: 10px;
       font-size: 16px;
       box-sizing: border-box;
+    }
+    label {
+      display: block;
+      margin-top: 8px;
+      font-size: 14px;
     }
     #bar-container {
       background: #e0e0e0;
@@ -30,19 +35,35 @@
       background: #e0e0e0;
       transition: width 0.3s, background 0.3s;
     }
+    .note {
+      font-size: 12px;
+      color: #666;
+      margin-top: 24px;
+    }
   </style>
 </head>
 <body>
   <h1>Password Strength Checker</h1>
   <p>Type a password below to check its strength.</p>
 
-  <input type="text" id="password" placeholder="Enter a password">
+  <input type="password" id="password" placeholder="Enter a password" autocomplete="off">
+  <label><input type="checkbox" id="toggle"> Show password</label>
+
   <div id="bar-container"><div id="bar"></div></div>
   <p id="result">Strength: waiting for input...</p>
-  
-       <script>
+  <p id="crack"></p>
+
+  <p class="note">
+    Your password is checked only in your browser. It is never sent anywhere.
+    The crack time is a rough estimate that assumes an attacker making
+    10 billion guesses per second.
+  </p>
+
+  <script>
     const passwordInput = document.getElementById("password");
+    const toggle = document.getElementById("toggle");
     const result = document.getElementById("result");
+    const crack = document.getElementById("crack");
     const bar = document.getElementById("bar");
 
     const commonPatterns = [
@@ -51,6 +72,7 @@
     ];
 
     const colors = ["#d32f2f", "#f57c00", "#fbc02d", "#7cb342", "#2e7d32"];
+    const labels = ["Very weak", "Weak", "Medium", "Strong", "Very strong"];
 
     function isCommon(password) {
       const lower = password.toLowerCase();
@@ -71,18 +93,53 @@
       return score;
     }
 
-    passwordInput.addEventListener("input", function () {
+    function estimateSeconds(password) {
+      let pool = 0;
+      if (/[a-z]/.test(password)) pool += 26;
+      if (/[A-Z]/.test(password)) pool += 26;
+      if (/[0-9]/.test(password)) pool += 10;
+      if (/[^A-Za-z0-9]/.test(password)) pool += 33;
+
+      const guesses = Math.pow(pool, password.length);
+      const guessesPerSecond = 1e10;
+      return guesses / 2 / guessesPerSecond;
+    }
+
+    function formatTime(seconds) {
+      const minute = 60;
+      const hour = 3600;
+      const day = 86400;
+      const year = 31557600;
+
+      if (seconds < 1) return "instantly";
+      if (seconds < minute) return Math.round(seconds) + " seconds";
+      if (seconds < hour) return Math.round(seconds / minute) + " minutes";
+      if (seconds < day) return Math.round(seconds / hour) + " hours";
+      if (seconds < year) return Math.round(seconds / day) + " days";
+
+      const years = seconds / year;
+      if (years >= 1e9) return "billions of years";
+      if (years >= 1e6) return "millions of years";
+      return Math.round(years).toLocaleString() + " years";
+    }
+
+    toggle.addEventListener("change", function () {
+      passwordInput.type = toggle.checked ? "text" : "password";
+    });
+
+    function update() {
       const password = passwordInput.value;
 
       if (password.length === 0) {
         result.textContent = "Strength: waiting for input...";
+        crack.textContent = "";
         bar.style.width = "0";
         return;
       }
 
-      const labels = ["Very weak", "Weak", "Medium", "Strong", "Very strong"];
       let score = checkStrength(password);
-      if (isCommon(password)) {
+      const common = isCommon(password);
+      if (common) {
         score = Math.min(score, 2);
       }
       const index = Math.max(score - 1, 0);
@@ -90,7 +147,16 @@
       result.textContent = "Strength: " + labels[index] + " (" + score + "/5)";
       bar.style.width = ((index + 1) * 20) + "%";
       bar.style.background = colors[index];
-    });
+
+      if (common) {
+        crack.textContent = "Estimated time to crack: instantly (common pattern)";
+      } else {
+        crack.textContent = "Estimated time to crack: " + formatTime(estimateSeconds(password));
+      }
+    }
+
+    passwordInput.addEventListener("input", update);
+    update();
   </script>
 </body>
 </html>
