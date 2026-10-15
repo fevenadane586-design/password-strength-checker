@@ -13,18 +13,35 @@
 
   <p id="result">Strength: waiting for input...</p>
   
-  <script>
+    <script>
     const passwordInput = document.getElementById("password");
     const result = document.getElementById("result");
 
-    passwordInput.addEventListener("input", function () {
-      const length = passwordInput.value.length;
+    function checkStrength(password) {
+      let score = 0;
 
-      if (length === 0) {
+      if (password.length >= 8) score++;
+      if (password.length >= 12) score++;
+      if (/[a-z]/.test(password) && /[A-Z]/.test(password)) score++;
+      if (/[0-9]/.test(password)) score++;
+      if (/[^A-Za-z0-9]/.test(password)) score++;
+
+      return score;
+    }
+
+    passwordInput.addEventListener("input", function () {
+      const password = passwordInput.value;
+
+      if (password.length === 0) {
         result.textContent = "Strength: waiting for input...";
-      } else {
-        result.textContent = "Your password has " + length + " characters.";
+        return;
       }
+
+      const labels = ["Very weak", "Weak", "Medium", "Strong", "Very strong"];
+      const score = checkStrength(password);
+      const label = labels[Math.max(score - 1, 0)];
+
+      result.textContent = "Strength: " + label + " (" + score + "/5)";
     });
   </script>
 </body>
