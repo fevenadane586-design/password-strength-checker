@@ -4,6 +4,8 @@ A browser-based tool that rates how strong a password is, shows a colored streng
 
 **Live demo:** https://fevenadane586-design.github.io/password-strength-checker/
 
+![Screenshot of the Password Strength Checker](screenshot.png)
+
 ## Features
 
 - Strength score from 1 to 5 with a colored bar (red to green)
