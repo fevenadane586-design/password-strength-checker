@@ -13,12 +13,11 @@
 
   <p id="result">Strength: waiting for input...</p>
   
-    <script>
+      <script>
     const passwordInput = document.getElementById("password");
     const result = document.getElementById("result");
 
-    function checkStrength(password) {
-          const commonPatterns = [
+    const commonPatterns = [
       "password", "123456", "qwerty", "asdf", "letmein",
       "welcome", "admin", "iloveyou", "abc123", "111111", "123qwe"
     ];
@@ -29,6 +28,8 @@
         return lower.includes(pattern);
       });
     }
+
+    function checkStrength(password) {
       let score = 0;
 
       if (password.length >= 8) score++;
@@ -49,7 +50,7 @@
       }
 
       const labels = ["Very weak", "Weak", "Medium", "Strong", "Very strong"];
-          let score = checkStrength(password);
+      let score = checkStrength(password);
       if (isCommon(password)) {
         score = Math.min(score, 2);
       }
